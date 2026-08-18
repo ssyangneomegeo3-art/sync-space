@@ -24,16 +24,19 @@ export async function createTaskAction(
 
   const supabase = await createClient();
 
-  const { data: existingTasks } = await supabase
+  const { data: existingTasks } = await (supabase as any)
     .from("tasks")
     .select("position")
     .eq("board_id", boardId)
     .order("position", { ascending: false })
     .limit(1);
 
-  const nextPosition = existingTasks && existingTasks.length > 0 ? existingTasks[0].position + 1 : 0;
+  const nextPosition =
+    existingTasks && existingTasks.length > 0
+      ? (existingTasks[0] as any).position + 1
+      : 0;
 
-  const { error } = await supabase.from("tasks").insert({
+  const { error } = await (supabase as any).from("tasks").insert({
     workspace_id: workspaceId,
     board_id: boardId,
     title,
@@ -67,7 +70,7 @@ export async function updateTaskAction(
 
   const supabase = await createClient();
 
-  const { error } = await supabase
+  const { error } = await (supabase as any)
     .from("tasks")
     .update({
       title,
@@ -95,7 +98,7 @@ export async function moveTaskAction(
 ): Promise<KanbanActionResponse> {
   const supabase = await createClient();
 
-  const { error } = await supabase
+  const { error } = await (supabase as any)
     .from("tasks")
     .update({
       board_id: targetBoardId,
@@ -118,7 +121,7 @@ export async function deleteTaskAction(
 ): Promise<KanbanActionResponse> {
   const supabase = await createClient();
 
-  const { error } = await supabase
+  const { error } = await (supabase as any)
     .from("tasks")
     .delete()
     .eq("id", taskId);
@@ -143,16 +146,17 @@ export async function createBoardAction(
 
   const supabase = await createClient();
 
-  const { data: boards } = await supabase
+  const { data: boards } = await (supabase as any)
     .from("boards")
     .select("position")
     .eq("workspace_id", workspaceId)
     .order("position", { ascending: false })
     .limit(1);
 
-  const nextPos = boards && boards.length > 0 ? boards[0].position + 1 : 0;
+  const nextPos =
+    boards && boards.length > 0 ? (boards[0] as any).position + 1 : 0;
 
-  const { error } = await supabase.from("boards").insert({
+  const { error } = await (supabase as any).from("boards").insert({
     workspace_id: workspaceId,
     title,
     position: nextPos,
@@ -179,7 +183,7 @@ export async function inviteMemberAction(
 
   const supabase = await createClient();
 
-  const { data: targetProfile, error: profileError } = await supabase
+  const { data: targetProfile, error: profileError } = await (supabase as any)
     .from("profiles")
     .select("id")
     .eq("email", email)
@@ -192,22 +196,22 @@ export async function inviteMemberAction(
     };
   }
 
-  const { data: existingMember } = await supabase
+  const { data: existingMember } = await (supabase as any)
     .from("workspace_members")
     .select("id")
     .eq("workspace_id", workspaceId)
-    .eq("user_id", targetProfile.id)
+    .eq("user_id", (targetProfile as any).id)
     .single();
 
   if (existingMember) {
     return { success: false, error: "이미 이 워크스페이스에 참여 중인 팀원입니다." };
   }
 
-  const { error: insertError } = await supabase
+  const { error: insertError } = await (supabase as any)
     .from("workspace_members")
     .insert({
       workspace_id: workspaceId,
-      user_id: targetProfile.id,
+      user_id: (targetProfile as any).id,
       role,
     });
 
@@ -226,7 +230,7 @@ export async function updateMemberRoleAction(
 ): Promise<KanbanActionResponse> {
   const supabase = await createClient();
 
-  const { error } = await supabase
+  const { error } = await (supabase as any)
     .from("workspace_members")
     .update({ role: newRole })
     .eq("id", memberId);
@@ -245,7 +249,7 @@ export async function removeMemberAction(
 ): Promise<KanbanActionResponse> {
   const supabase = await createClient();
 
-  const { error } = await supabase
+  const { error } = await (supabase as any)
     .from("workspace_members")
     .delete()
     .eq("id", memberId);

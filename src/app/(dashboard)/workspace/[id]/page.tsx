@@ -5,15 +5,13 @@ import type { Metadata } from "next";
 import { ChevronLeft, Layers } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import KanbanBoard from "@/components/kanban/KanbanBoard";
-import InviteMemberModal from "@/components/kanban/InviteMemberModal";
+import InviteMemberModal, {
+  type MemberWithProfile,
+} from "@/components/kanban/InviteMemberModal";
 import type { Board, Task, Workspace, WorkspaceMember, Profile } from "@/types/database";
 
 interface WorkspaceDetailPageProps {
   params: Promise<{ id: string }>;
-}
-
-interface MemberWithProfile extends WorkspaceMember {
-  profile: Profile | null;
 }
 
 export async function generateMetadata({
@@ -22,14 +20,14 @@ export async function generateMetadata({
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data: workspace } = await supabase
+  const { data: workspace } = await (supabase as any)
     .from("workspaces")
     .select("name")
     .eq("id", id)
-    .single<{ name: string }>();
+    .single();
 
   return {
-    title: workspace ? `${workspace.name} | SyncSpace 칸반` : "워크스페이스 | SyncSpace",
+    title: workspace ? `${(workspace as any).name} | SyncSpace 칸반` : "워크스페이스 | SyncSpace",
   };
 }
 
@@ -47,8 +45,8 @@ export default async function WorkspaceDetailPage({
     redirect("/login");
   }
 
-  // 1. 유저의 해당 워크스페이스 멤버십 권한 확인
-  const { data: member } = await supabase
+  // 1. 유저 멤버십 권한 확인
+  const { data: member } = await (supabase as any)
     .from("workspace_members")
     .select("role")
     .eq("workspace_id", id)
@@ -60,18 +58,18 @@ export default async function WorkspaceDetailPage({
   }
 
   // 2. 워크스페이스 정보 조회
-  const { data: workspace } = await supabase
+  const { data: workspace } = await (supabase as any)
     .from("workspaces")
     .select("*")
     .eq("id", id)
-    .single<Workspace>();
+    .single();
 
   if (!workspace) {
     notFound();
   }
 
-  // 3. 참여 중인 전체 멤버 및 프로필 정보 조회
-  const { data: rawMembers } = await supabase
+  // 3. 참여 중인 전체 멤버 및 프로필 조회
+  const { data: rawMembers } = await (supabase as any)
     .from("workspace_members")
     .select("*")
     .eq("workspace_id", id)
@@ -79,28 +77,30 @@ export default async function WorkspaceDetailPage({
 
   let membersWithProfiles: MemberWithProfile[] = [];
 
-  if (rawMembers && rawMembers.length > 0) {
-    const userIds = rawMembers.map((m: WorkspaceMember) => m.user_id);
-    const { data: profiles } = await supabase
+  if (rawMembers && (rawMembers as any[]).length > 0) {
+    const userIds = (rawMembers as any[]).map((m) => m.user_id);
+    const { data: profiles } = await (supabase as any)
       .from("profiles")
       .select("*")
       .in("id", userIds);
 
-    membersWithProfiles = rawMembers.map((m: WorkspaceMember) => ({
+    membersWithProfiles = (rawMembers as WorkspaceMember[]).map((m) => ({
       ...m,
-      profile: (profiles?.find((p: Profile) => p.id === m.user_id) as Profile) || null,
+      profile:
+        ((profiles as Profile[])?.find((p) => p.id === m.user_id) as Profile) ||
+        null,
     }));
   }
 
-  // 4. 워크스페이스 내 보드 컬럼 목록 조회
-  const { data: boards } = await supabase
+  // 4. 보드 컬럼 조회
+  const { data: boards } = await (supabase as any)
     .from("boards")
     .select("*")
     .eq("workspace_id", id)
     .order("position", { ascending: true });
 
-  // 5. 워크스페이스 내 모든 태스크 조회
-  const { data: tasks } = await supabase
+  // 5. 태스크 목록 조회
+  const { data: tasks } = await (supabase as any)
     .from("tasks")
     .select("*")
     .eq("workspace_id", id)
@@ -121,23 +121,23 @@ export default async function WorkspaceDetailPage({
             <div className="flex items-center gap-2">
               <Layers className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
               <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-                {workspace.name}
+                {(workspace as Workspace).name}
               </h1>
             </div>
-            <p className="text-xs text-zinc-400">/{workspace.slug}</p>
+            <p className="text-xs text-zinc-400">/{(workspace as Workspace).slug}</p>
           </div>
         </div>
 
         <InviteMemberModal
-          workspaceId={workspace.id}
+          workspaceId={(workspace as Workspace).id}
           members={membersWithProfiles}
           currentUserId={user.id}
-          isOwner={workspace.owner_id === user.id}
+          isOwner={(workspace as Workspace).owner_id === user.id}
         />
       </div>
 
       <KanbanBoard
-        workspaceId={workspace.id}
+        workspaceId={(workspace as Workspace).id}
         initialBoards={(boards as Board[]) || []}
         initialTasks={(tasks as Task[]) || []}
         members={membersWithProfiles}

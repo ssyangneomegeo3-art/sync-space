@@ -167,6 +167,7 @@ export interface Database {
           priority: TaskPriority;
           assignee_id: string | null;
           due_date: string | null;
+          tags: string[];
           created_at: string;
           updated_at: string;
         };
@@ -180,6 +181,7 @@ export interface Database {
           priority?: TaskPriority;
           assignee_id?: string | null;
           due_date?: string | null;
+          tags?: string[];
           created_at?: string;
           updated_at?: string;
         };
@@ -193,6 +195,7 @@ export interface Database {
           priority?: TaskPriority;
           assignee_id?: string | null;
           due_date?: string | null;
+          tags?: string[];
           created_at?: string;
           updated_at?: string;
         };
@@ -220,6 +223,116 @@ export interface Database {
           }
         ];
       };
+      task_comments: {
+        Row: {
+          id: string;
+          task_id: string;
+          workspace_id: string;
+          author_id: string;
+          content: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          task_id: string;
+          workspace_id: string;
+          author_id: string;
+          content: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          task_id?: string;
+          workspace_id?: string;
+          author_id?: string;
+          content?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "task_comments_author_id_fkey";
+            columns: ["author_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "task_comments_task_id_fkey";
+            columns: ["task_id"];
+            isOneToOne: false;
+            referencedRelation: "tasks";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "task_comments_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      task_attachments: {
+        Row: {
+          id: string;
+          task_id: string;
+          workspace_id: string;
+          uploaded_by: string;
+          file_name: string;
+          file_path: string;
+          file_size: number;
+          mime_type: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          task_id: string;
+          workspace_id: string;
+          uploaded_by: string;
+          file_name: string;
+          file_path: string;
+          file_size?: number;
+          mime_type?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          task_id?: string;
+          workspace_id?: string;
+          uploaded_by?: string;
+          file_name?: string;
+          file_path?: string;
+          file_size?: number;
+          mime_type?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "task_attachments_task_id_fkey";
+            columns: ["task_id"];
+            isOneToOne: false;
+            referencedRelation: "tasks";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "task_attachments_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "task_attachments_uploaded_by_fkey";
+            columns: ["uploaded_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -242,3 +355,15 @@ export type Workspace = Database["public"]["Tables"]["workspaces"]["Row"];
 export type WorkspaceMember = Database["public"]["Tables"]["workspace_members"]["Row"];
 export type Board = Database["public"]["Tables"]["boards"]["Row"];
 export type Task = Database["public"]["Tables"]["tasks"]["Row"];
+export type TaskComment = Database["public"]["Tables"]["task_comments"]["Row"];
+export type TaskAttachment = Database["public"]["Tables"]["task_attachments"]["Row"];
+
+export interface TaskCommentWithAuthor extends TaskComment {
+  author: Profile | null;
+}
+
+export interface TaskPositionUpdate {
+  id: string;
+  board_id: string;
+  position: number;
+}

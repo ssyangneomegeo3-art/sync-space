@@ -6,7 +6,11 @@ import { createWorkspaceAction, type WorkspaceActionResponse } from "@/app/(dash
 
 const initialState: WorkspaceActionResponse = {};
 
-export default function CreateWorkspaceModal(): React.JSX.Element {
+export default function CreateWorkspaceModal({
+  label = "새 워크스페이스",
+}: {
+  label?: string;
+}): React.JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
   const [state, formAction, isPending] = useActionState(
     createWorkspaceAction,
@@ -24,7 +28,7 @@ export default function CreateWorkspaceModal(): React.JSX.Element {
         className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:scale-[0.98]"
       >
         <Plus className="h-4 w-4" />
-        <span>새 워크스페이스</span>
+        <span>{label}</span>
       </button>
 
       {isOpen && (

@@ -2,8 +2,9 @@ import React from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
-import { Plus, LayoutGrid, Calendar, ArrowRight, ShieldCheck, User } from "lucide-react";
+import { LayoutGrid, Calendar, ArrowRight, ShieldCheck, User } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import CreateWorkspaceModal from "@/components/dashboard/CreateWorkspaceModal";
 import type { Workspace, WorkspaceMember } from "@/types/database";
 
 export const metadata: Metadata = {
@@ -54,13 +55,7 @@ export default async function WorkspaceListPage(): Promise<React.JSX.Element> {
             참여 중인 협업 공간을 선택하거나 새로운 워크스페이스를 만드세요.
           </p>
         </div>
-        <Link
-          href="/workspace/new"
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
-        >
-          <Plus className="h-4 w-4" />
-          <span>새 워크스페이스</span>
-        </Link>
+        <CreateWorkspaceModal />
       </div>
 
       {workspaces.length === 0 ? (
@@ -74,13 +69,9 @@ export default async function WorkspaceListPage(): Promise<React.JSX.Element> {
           <p className="mt-1 max-w-sm text-xs text-zinc-500 dark:text-zinc-400">
             팀원들과 실시간 칸반 협업을 시작하려면 첫 번째 워크스페이스를 생성해 보세요.
           </p>
-          <Link
-            href="/workspace/new"
-            className="mt-5 inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            <span>첫 워크스페이스 만들기</span>
-          </Link>
+          <div className="mt-5">
+            <CreateWorkspaceModal label="첫 워크스페이스 만들기" />
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

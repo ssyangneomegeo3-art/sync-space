@@ -2,8 +2,9 @@
 
 import React, { useTransition } from "react";
 import Link from "next/link";
-import { Sparkles, LogOut, Loader2, User } from "lucide-react";
+import { Sparkles, LogOut, Loader2, User, Moon, Sun } from "lucide-react";
 import { signOutAction } from "@/app/(auth)/actions";
+import { useThemeStore } from "@/store/theme-store";
 import type { Profile } from "@/types/database";
 
 interface DashboardHeaderProps {
@@ -18,6 +19,8 @@ export default function DashboardHeader({
   profile,
 }: DashboardHeaderProps): React.JSX.Element {
   const [isPending, startTransition] = useTransition();
+  const theme = useThemeStore((state) => state.theme);
+  const toggleTheme = useThemeStore((state) => state.toggleTheme);
 
   const handleSignOut = () => {
     startTransition(async () => {
@@ -66,6 +69,15 @@ export default function DashboardHeader({
             </span>
           </div>
         </div>
+
+        <button
+          type="button"
+          onClick={toggleTheme}
+          className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-600 shadow-sm transition hover:bg-zinc-50 hover:text-indigo-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-indigo-400"
+          title={theme === "dark" ? "라이트 모드" : "다크 모드"}
+        >
+          {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+        </button>
 
         <button
           onClick={handleSignOut}

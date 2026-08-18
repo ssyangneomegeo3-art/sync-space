@@ -4,10 +4,11 @@ import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { ChevronLeft, Layers } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import KanbanBoard from "@/components/kanban/KanbanBoard";
+import KanbanBoardLoader from "@/components/kanban/KanbanBoardLoader";
 import InviteMemberModal, {
   type MemberWithProfile,
 } from "@/components/kanban/InviteMemberModal";
+import { normalizeTask } from "@/lib/kanban";
 import type { Board, Task, Workspace, WorkspaceMember, Profile } from "@/types/database";
 
 interface WorkspaceDetailPageProps {
@@ -136,10 +137,17 @@ export default async function WorkspaceDetailPage({
         />
       </div>
 
-      <KanbanBoard
+      <KanbanBoardLoader
         workspaceId={(workspace as Workspace).id}
+        currentUserId={user.id}
+        currentUserName={
+          membersWithProfiles.find((member) => member.user_id === user.id)?.profile
+            ?.full_name ||
+          user.email?.split("@")[0] ||
+          "나"
+        }
         initialBoards={(boards as Board[]) || []}
-        initialTasks={(tasks as Task[]) || []}
+        initialTasks={((tasks as Task[]) || []).map(normalizeTask)}
         members={membersWithProfiles}
       />
     </div>
